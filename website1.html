@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GlobalTradeX — Import & Export</title>
+  <meta name="description" content="GlobalTradeX: Reliable import-export services connecting businesses worldwide." />
+  <style>
+    /* ===== Theme ===== */
+    :root {
+      --blue-900: #0b1f3f;
+      --blue-800: #123a6f;
+      --blue-600: #1f5fa8;
+      --maroon-900: #3e0b18;
+      --maroon-700: #7a1d33;
+      --maroon-500: #b2324f;
+      --text: #f3f6fb;
+      --muted: #cdd7eb;
+      --card: rgba(255,255,255,0.06);
+      --glass: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.25);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, var(--blue-900), var(--blue-800) 55%, var(--maroon-900));
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ===== Layout ===== */
+    .container { width: min(1100px, 92%); margin: 0 auto; }
+    header {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: saturate(140%) blur(6px);
+      background: linear-gradient(90deg, rgba(11,31,63,.75), rgba(58,12,27,.75));
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: .3px; }
+    .brand .logo { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, var(--blue-600), var(--maroon-500)); box-shadow: var(--shadow); }
+
+    .links { display: flex; gap: 18px; flex-wrap: wrap; }
+    .links a { color: var(--muted); text-decoration: none; padding: 8px 12px; border-radius: 10px; transition: .2s ease; }
+    .links a.active, .links a:hover { color: white; background: var(--glass); }
+
+    main { flex: 1; padding: 32px 0 60px; }
+
+    /* ===== Pages (SPA-style with hash routing) ===== */
+    .page { display: none; animation: fade .35s ease both; }
+    .page.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    /* ===== Reusable UI ===== */
+    .hero {
+      display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; align-items: center;
+      background: linear-gradient(135deg, rgba(31,95,168,.22), rgba(178,50,79,.22));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow);
+    }
+    .hero h1 { font-size: clamp(28px, 5vw, 44px); margin: 0 0 8px; }
+    .hero p { color: var(--muted); margin: 0 0 16px; }
+    .hero .cta { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn { appearance: none; border: none; cursor: pointer; font-weight: 700; letter-spacing: .2px; }
+    .btn.primary { background: linear-gradient(135deg, var(--blue-600), var(--maroon-500)); color: white; padding: 12px 18px; border-radius: 12px; box-shadow: var(--shadow); }
+    .btn.ghost { background: transparent; color: var(--text); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,.18); }
+
+    .grid { display: grid; gap: 20px; }
+    .grid.cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .grid.cols-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+
+    .card { background: var(--card); border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+    .card h3 { margin-top: 0; }
+    .tag { display:inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; background: rgba(255,255,255,.12); margin-right: 8px; }
+
+    /* ===== Forms ===== */
+    form { display: grid; gap: 14px; }
+    input, textarea, select {
+      width: 100%; padding: 12px 14px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.18); background: rgba(10,10,20,.35);
+      color: var(--text);
+    }
+    input::placeholder, textarea::placeholder { color: #c5cfe6; }
+    .form-row { display: grid; gap: 14px; }
+    @media (min-width: 720px) { .form-row { grid-template-columns: 1fr 1fr; } }
+
+    /* ===== Footer ===== */
+    footer { border-top: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,.25); }
+    .footer-wrap { display: grid; gap: 20px; grid-template-columns: 1.4fr 1fr 1fr; padding: 26px 0; }
+    .tiny { color: var(--muted); font-size: 14px; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .grid.cols-3 { grid-template-columns: 1fr; }
+      .grid.cols-2 { grid-template-columns: 1fr; }
+      .footer-wrap { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== Header / Nav ===== -->
+  <header>
+    <div class="container nav" role="navigation" aria-label="Primary">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <span>GlobalTradeX</span>
+      </div>
+      <nav class="links" id="nav-links">
+        <a href="#/" data-route="#/">Home</a>
+        <a href="#/about" data-route="#/about">About Us</a>
+        <a href="#/contact" data-route="#/contact">Contact</a>
+        <a href="#/inquiry" data-route="#/inquiry">Inquiry</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- ===== Home ===== -->
+    <section id="page-home" class="page active" aria-labelledby="home-title">
+      <div class="hero card">
+        <div>
+          <h1 id="home-title">Your Trusted Import–Export Partner</h1>
+          <p>
+            We connect businesses across continents with seamless logistics, transparent documentation,
+            and dependable trade finance support.
+          </p>
+          <div class="cta">
+            <a class="btn primary" href="#/inquiry">Start an Inquiry</a>
+            <a class="btn ghost" href="#/about">Learn More</a>
+          </div>
+        </div>
+        <div class="card" aria-hidden="true">
+          <div class="tag">Sea Freight</div>
+          <div class="tag">Air Cargo</div>
+          <div class="tag">Customs</div>
+          <div class="tag">Sourcing</div>
+          <p class="tiny" style="margin-top:12px">End‑to‑end trade solutions for SMEs and enterprises.</p>
+        </div>
+      </div>
+
+      <h2 style="margin:28px 0 10px">Vision & Mission</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Our Vision</h3>
+          <p>
+            To be the most reliable and innovative global trade partner—making cross‑border commerce effortless
+            and sustainable for every client we serve.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Our Mission</h3>
+          <p>
+            We deliver excellence in international trade through meticulous compliance, real‑time visibility,
+            and customer‑first execution—on time, every time.
+          </p>
+        </div>
+      </div>
+
+      <h2 style="margin:28px 0 10px">Core Services</h2>
+      <div class="grid cols-3">
+        <div class="card">
+          <h3>Freight & Logistics</h3>
+          <p>Ocean, air, and multimodal solutions with live tracking and route optimization.</p>
+        </div>
+        <div class="card">
+          <h3>Customs & Compliance</h3>
+          <p>Documentation, duties, and regulations handled with zero‑surprise transparency.</p>
+        </div>
+        <div class="card">
+          <h3>Global Sourcing</h3>
+          <p>Supplier discovery, audits, and quality checks across key markets.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== About ===== -->
+    <section id="page-about" class="page" aria-labelledby="about-title">
+      <div class="card">
+        <h1 id="about-title">About GlobalTradeX</h1>
+        <p>
+          Founded by logistics veterans, GlobalTradeX was built to remove friction from cross‑border trade.
+          Our team blends decades of operational expertise with modern technology to deliver dependable,
+          scalable import‑export services across APAC, EMEA, and the Americas.
+        </p>
+      </div>
+
+      <div class="grid cols-3" style="margin-top:18px">
+        <div class="card">
+          <h3>What We Value</h3>
+          <ul>
+            <li>Integrity & transparency</li>
+            <li>Operational excellence</li>
+            <li>Customer obsession</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Industries Served</h3>
+          <ul>
+            <li>Automotive & Engineering</li>
+            <li>Textiles & Apparel</li>
+            <li>Food, Agri & FMCG</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Coverage</h3>
+          <p>Partner network in 60+ ports and 40+ airports worldwide.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Contact ===== -->
+    <section id="page-contact" class="page" aria-labelledby="contact-title">
+      <h1 id="contact-title" style="margin-bottom:14px">Contact Us</h1>
+      <div class="grid cols-2">
+        <div class="card">
+          <h2>Director</h2>
+          <p><strong>Name:</strong> John Smith</p>
+          <p><strong>Email:</strong> <a href="mailto:director@globaltradex.com">director@globaltradex.com</a></p>
+          <p><strong>Phone:</strong> <a href="tel:+919876543210">+91 98765 43210</a></p>
+        </div>
+        <div class="card">
+          <h2>Employees</h2>
+          <ul style="margin:0; padding-left:18px">
+            <li>Jane Doe — Sales Manager — <a href="mailto:jane@globaltradex.com">jane@globaltradex.com</a></li>
+            <li>Michael Lee — Operations Head — <a href="mailto:michael@globaltradex.com">michael@globaltradex.com</a></li>
+            <li>Priya Sharma — Customer Relations — <a href="mailto:priya@globaltradex.com">priya@globaltradex.com</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>Office</h2>
+        <p>GlobalTradeX Pvt. Ltd., Trade Tower, Mumbai, India</p>
+      </div>
+    </section>
+
+    <!-- ===== Inquiry ===== -->
+    <section id="page-inquiry" class="page" aria-labelledby="inquiry-title">
+      <div class="card">
+        <h1 id="inquiry-title">Inquiry Form</h1>
+        <form id="inquiry-form" novalidate>
+          <div class="form-row">
+            <div>
+              <label for="name" class="tiny">Your Name</label>
+              <input id="name" name="name" type="text" placeholder="Jane Smith" required />
+            </div>
+            <div>
+              <label for="email" class="tiny">Email</label>
+              <input id="email" name="email" type="email" placeholder="you@example.com" required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label for="service" class="tiny">Service</label>
+              <select id="service" name="service" required>
+                <option value="">Select a service…</option>
+                <option>Freight & Logistics</option>
+                <option>Customs & Compliance</option>
+                <option>Global Sourcing</option>
+              </select>
+            </div>
+            <div>
+              <label for="phone" class="tiny">Phone</label>
+              <input id="phone" name="phone" type="tel" placeholder="+91 98xxxxxxx" />
+            </div>
+          </div>
+          <div>
+            <label for="message" class="tiny">Message</label>
+            <textarea id="message" name="message" rows="5" placeholder="Tell us about your shipment or requirements…" required></textarea>
+          </div>
+          <button class="btn primary" type="submit">Submit Inquiry</button>
+          <p id="form-status" class="tiny" role="status" aria-live="polite" style="margin-top:10px"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer>
+    <div class="container footer-wrap">
+      <div>
+        <strong>GlobalTradeX</strong>
+        <p class="tiny">© 2025 GlobalTradeX. All rights reserved.</p>
+      </div>
+      <div>
+        <strong>Quick Links</strong>
+        <div class="tiny"><a href="#/">Home</a> · <a href="#/about">About</a> · <a href="#/contact">Contact</a> · <a href="#/inquiry">Inquiry</a></div>
+      </div>
+      <div>
+        <strong>Get in Touch</strong>
+        <p class="tiny">Trade Tower, Mumbai · +91 98765 43210 · hello@globaltradex.com</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ===== Tiny client-side router using URL hash =====
+    const routes = {
+      '#/': 'page-home',
+      '#/about': 'page-about',
+      '#/contact': 'page-contact',
+      '#/inquiry': 'page-inquiry',
+    };
+
+    function setActiveLink(hash) {
+      const links = document.querySelectorAll('#nav-links a');
+      links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === hash));
+    }
+
+    function navigate() {
+      const hash = location.hash || '#/';
+      const targetId = routes[hash] || 'page-home';
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(targetId).classList.add('active');
+      setActiveLink(hash || '#/');
+    }
+    window.addEventListener('hashchange', navigate);
+    window.addEventListener('DOMContentLoaded', navigate);
+
+    // ===== Simple form handler (demo only) =====
+    const form = document.getElementById('inquiry-form');
+    const status = document.getElementById('form-status');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!form.checkValidity()) {
+          status.textContent = 'Please fill in all required fields correctly.';
+          status.style.color = '#ffdddd';
+          return;
+        }
+        const data = Object.fromEntries(new FormData(form).entries());
+        // In production, POST `data` to your backend or a service like Formspree.
+        console.log('Inquiry submitted:', data);
+        status.textContent = 'Thanks! Your inquiry has been recorded.';
+        status.style.color = '#cde7d8';
+        form.reset();
+      });
+    }
+  </script>
+</body>
+</html>
